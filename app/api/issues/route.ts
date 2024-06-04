@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { title } from "process";
 import {z} from 'zod';
 import prisma from "@/prisma/client";
+import { getServerSession } from "next-auth";
+import authOptions from "@/app/auth/authOptions";
 
 
 const createIssueSchema = z.object({
@@ -9,6 +11,11 @@ const createIssueSchema = z.object({
     description: z.string().min(1, 'Description is required.')
 })
 export async function POST(request: NextRequest){
+    const session = await getServerSession(authOptions);
+    if(!session){
+        return NextResponse.json({}, {status:401});
+    }
+
     const body = await request.json();
     const validation = createIssueSchema.safeParse(body);
     if(!validation.success)
